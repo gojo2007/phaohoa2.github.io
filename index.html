@@ -30,13 +30,13 @@
     // Cài đặt nhạc nền
     var backgroundAudio = new Audio(backgroundMusicURL);
     backgroundAudio.loop = true; // Cho nhạc lặp lại
-    backgroundAudio.volume = 0.5; // Âm lượng nhạc nền (0.5 là vừa)
+    backgroundAudio.volume = 1.0; // Âm lượng nhạc nền (0.5 là vừa)
     var musicStarted = false;
 
     // Hàm phát tiếng nổ
     function playSound() {
         var audio = new Audio(explosionSoundURL);
-        audio.volume = 1.0; // Tiếng nổ to hết cỡ
+        audio.volume = 0.2; // Tiếng nổ to hết cỡ
         audio.play().catch(function(error) { });
     }
 
@@ -308,3 +308,4 @@
 </script>
 </body>
 </html>
+
