@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pháo Hoa Tết Có Nhạc</title>
+    <title>Pháo Hoa Tết 2026 (Không Nhạc Nền)</title>
     <style>
         body {
             background: #000;
@@ -14,33 +14,60 @@
         canvas {
             display: block;
         }
+        /* --- PHẦN HỘP QUÀ --- */
+        #gift-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            cursor: pointer;
+            flex-direction: column;
+        }
+        #gift-box {
+            font-size: 100px;
+            animation: laclu 1s infinite;
+        }
+        #gift-text {
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin-top: 20px;
+            font-size: 20px;
+            text-transform: uppercase;
+        }
+        @keyframes laclu {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+            75% { transform: rotate(-10deg); }
+            100% { transform: rotate(0deg); }
+        }
     </style>
 </head>
 <body>
 
+    <div id="gift-overlay">
+        <div id="gift-box">🎁</div>
+        <div id="gift-text">Nhấn để mở quà Tết</div>
+    </div>
+
     <canvas id="canvas"></canvas>
 
 <script>
-    // --- CẤU HÌNH ÂM THANH ---
-    
-    // Vì bạn đã tải file lên GitHub, giờ chỉ cần gọi tên nó là được
+    // --- CẤU HÌNH ÂM THANH (CHỈ GIỮ TIẾNG NỔ, ĐÃ XÓA NHẠC NỀN) ---
     const explosionSoundURL = 'nophap.mp3'; 
-    const backgroundMusicURL = 'nhacnen.mp3'; 
+    // Đã xóa dòng backgroundMusicURL và backgroundAudio
 
-    // Cài đặt nhạc nền
-    var backgroundAudio = new Audio(backgroundMusicURL);
-    backgroundAudio.loop = true; // Cho nhạc lặp lại
-    backgroundAudio.volume = 1.0; // Âm lượng nhạc nền (0.5 là vừa)
-    var musicStarted = false;
-
-    // Hàm phát tiếng nổ
+    // Hàm phát tiếng nổ (Vẫn giữ lại để có tiếng lách tách cho vui tai)
     function playSound() {
         var audio = new Audio(explosionSoundURL);
-        audio.volume = 0.2; // Tiếng nổ to hết cỡ
+        audio.volume = 0.2; 
         audio.play().catch(function(error) { });
     }
 
-    // --- CẤU HÌNH KHUNG HÌNH ---
+    // --- CẤU HÌNH KHUNG HÌNH (GIỮ NGUYÊN) ---
     window.requestAnimFrame = (function() {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
@@ -82,7 +109,7 @@
         return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
     }
 
-    // --- LỚP PHÁO BAY LÊN ---
+    // --- LỚP PHÁO BAY LÊN (GIỮ NGUYÊN) ---
     function Firework(sx, sy, tx, ty, shapeType = null) {
         this.x = sx;
         this.y = sy;
@@ -117,10 +144,15 @@
         this.distanceTraveled = calculateDistance(this.sx, this.sy, this.x + vx, this.y + vy);
 
         if (this.distanceTraveled >= this.distanceToTarget) {
-            playSound(); // Nổ Bùm
+            playSound(); // Tiếng nổ vẫn còn
             
+            // --- CÁC HÌNH DẠNG (GIỮ NGUYÊN) ---
             if (this.shapeType === 'heart') {
                 createShapeParticles(this.tx, this.ty, getHeartPoints(3));
+            } else if (this.shapeType === 'star') { 
+                createShapeParticles(this.tx, this.ty, getStarPoints(3));
+            } else if (this.shapeType === 'moon') { 
+                createShapeParticles(this.tx, this.ty, getMoonPoints(3));
             } else if (this.shapeType === 'text') {
                 createShapeParticles(this.tx, this.ty - 50, getTextPoints("CHÚC MỪNG NĂM MỚI", 30));
             } else {
@@ -144,7 +176,7 @@
         ctx.stroke();
     }
 
-    // --- LỚP HẠT NỔ ---
+    // --- LỚP HẠT NỔ (GIỮ NGUYÊN) ---
     function Particle(x, y) {
         this.x = x;
         this.y = y;
@@ -207,11 +239,49 @@
         return points;
     }
 
+    // Hàm lấy điểm Ngôi Sao (Giữ nguyên)
+    function getStarPoints(scale) {
+        var points = [];
+        var r = 15 * scale;
+        for (var i = 0; i < 5; i++) {
+            points.push({
+                x: Math.cos((18 + i * 72) / 180 * Math.PI) * r * 2,
+                y: -Math.sin((18 + i * 72) / 180 * Math.PI) * r * 2
+            });
+            points.push({
+                x: Math.cos((54 + i * 72) / 180 * Math.PI) * r,
+                y: -Math.sin((54 + i * 72) / 180 * Math.PI) * r
+            });
+        }
+        var fullPoints = [];
+        for (var j = 0; j < points.length; j++) {
+            var p1 = points[j];
+            var p2 = points[(j + 1) % points.length];
+            for (var k = 0; k < 5; k++) {
+                fullPoints.push({
+                    x: p1.x + (p2.x - p1.x) * (k / 5),
+                    y: p1.y + (p2.y - p1.y) * (k / 5)
+                });
+            }
+        }
+        return fullPoints;
+    }
+
+    // Hàm lấy điểm Mặt Trăng (Giữ nguyên)
+    function getMoonPoints(scale) {
+        var points = [];
+        var r = 10 * scale; 
+        for (var t = 0; t < Math.PI * 2; t += 0.1) {
+            points.push({x: r * Math.cos(t), y: r * Math.sin(t)});
+        }
+        return points.filter(p => p.x > -5 * scale); 
+    }
+
     function getTextPoints(text, fontSize) {
         var hiddenCanvas = document.createElement('canvas');
         var hiddenCtx = hiddenCanvas.getContext('2d');
-        hiddenCanvas.width = 800;
-        hiddenCanvas.height = fontSize * 2;
+        hiddenCanvas.width = 1000;
+        hiddenCanvas.height = fontSize * 3;
         hiddenCtx.font = 'bold ' + fontSize + 'px Arial, sans-serif';
         hiddenCtx.fillStyle = '#FFF';
         hiddenCtx.textAlign = 'center';
@@ -231,7 +301,12 @@
         return points;
     }
 
+    // --- BIẾN KIỂM SOÁT VÒNG LẶP ---
+    var isRunning = false;
+
     function loop() {
+        if (!isRunning) return; 
+
         requestAnimFrame(loop);
         hue += 0.5;
 
@@ -257,8 +332,11 @@
                 var chance = random(0, 100);
                 var shape = null;
                 
-                if (chance > 80) { shape = 'text'; } 
-                else if (chance > 60) { shape = 'heart'; }
+                // TỶ LỆ XUẤT HIỆN (GIỮ NGUYÊN)
+                if (chance > 92) { shape = 'text'; } 
+                else if (chance > 80) { shape = 'heart'; }
+                else if (chance > 65) { shape = 'star'; } 
+                else if (chance > 50) { shape = 'moon'; } 
 
                 var targetX = shape === 'text' ? cw / 2 : random(0, cw);
                 var targetY = shape === 'text' ? ch / 3 : random(0, ch / 2);
@@ -285,31 +363,24 @@
         my = e.pageY - canvas.offsetTop;
     });
 
-    // --- KÍCH HOẠT NHẠC KHI CLICK ---
+    // --- KÍCH HOẠT HỘP QUÀ (KHÔNG PHÁT NHẠC NỮA) ---
+    document.getElementById('gift-overlay').addEventListener('click', function() {
+        this.style.display = 'none'; // Ẩn hộp quà
+        
+        // Chỉ chạy vòng lặp pháo hoa, không chạy nhạc
+        isRunning = true;
+        loop();
+    });
+
     canvas.addEventListener('mousedown', function(e) {
         e.preventDefault();
         mousedown = true;
-        
-        if (!musicStarted) {
-            backgroundAudio.play().then(function() {
-                musicStarted = true;
-            }).catch(function(error) {
-                console.log("Chờ người dùng tương tác");
-            });
-        }
     });
 
     canvas.addEventListener('mouseup', function(e) {
         e.preventDefault();
         mousedown = false;
     });
-
-    window.onload = loop;
 </script>
 </body>
 </html>
-
-
-
-
-
