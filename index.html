@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pháo Hoa Tết 2026 (Không Nhạc Nền)</title>
+    <title>Pháo Hoa Tết 2026</title>
     <style>
         body {
             background: #000;
@@ -14,7 +14,7 @@
         canvas {
             display: block;
         }
-        /* --- PHẦN HỘP QUÀ --- */
+        /* --- STYLE HỘP QUÀ --- */
         #gift-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -36,6 +36,7 @@
             margin-top: 20px;
             font-size: 20px;
             text-transform: uppercase;
+            text-shadow: 0 0 10px yellow;
         }
         @keyframes laclu {
             0% { transform: rotate(0deg); }
@@ -50,24 +51,30 @@
 
     <div id="gift-overlay">
         <div id="gift-box">🎁</div>
-        <div id="gift-text">Nhấn để mở quà Tết</div>
+        <div id="gift-text">Nhấn để mở quà & nghe nhạc Tết</div>
     </div>
 
     <canvas id="canvas"></canvas>
 
 <script>
-    // --- CẤU HÌNH ÂM THANH (CHỈ GIỮ TIẾNG NỔ, ĐÃ XÓA NHẠC NỀN) ---
-    const explosionSoundURL = 'nophap.mp3'; 
-    // Đã xóa dòng backgroundMusicURL và backgroundAudio
+    // --- CẤU HÌNH ÂM THANH ---
+    
+    // Đã xóa dòng nophap.mp3 theo yêu cầu
+    
+    // Sửa tên file nhạc nền thành nophao.mp4
+    const backgroundMusicURL = 'nophao.mp4'; 
 
-    // Hàm phát tiếng nổ (Vẫn giữ lại để có tiếng lách tách cho vui tai)
+    var backgroundAudio = new Audio(backgroundMusicURL);
+    backgroundAudio.loop = true; 
+    backgroundAudio.volume = 1.0;
+    var musicStarted = false;
+
+    // Hàm phát tiếng nổ (Đã để trống vì xóa file nổ)
     function playSound() {
-        var audio = new Audio(explosionSoundURL);
-        audio.volume = 0.2; 
-        audio.play().catch(function(error) { });
+        // Không làm gì cả
     }
 
-    // --- CẤU HÌNH KHUNG HÌNH (GIỮ NGUYÊN) ---
+    // --- CẤU HÌNH KHUNG HÌNH ---
     window.requestAnimFrame = (function() {
         return window.requestAnimationFrame ||
             window.webkitRequestAnimationFrame ||
@@ -109,7 +116,7 @@
         return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
     }
 
-    // --- LỚP PHÁO BAY LÊN (GIỮ NGUYÊN) ---
+    // --- LỚP PHÁO BAY LÊN ---
     function Firework(sx, sy, tx, ty, shapeType = null) {
         this.x = sx;
         this.y = sy;
@@ -144,9 +151,8 @@
         this.distanceTraveled = calculateDistance(this.sx, this.sy, this.x + vx, this.y + vy);
 
         if (this.distanceTraveled >= this.distanceToTarget) {
-            playSound(); // Tiếng nổ vẫn còn
+            playSound(); 
             
-            // --- CÁC HÌNH DẠNG (GIỮ NGUYÊN) ---
             if (this.shapeType === 'heart') {
                 createShapeParticles(this.tx, this.ty, getHeartPoints(3));
             } else if (this.shapeType === 'star') { 
@@ -176,7 +182,7 @@
         ctx.stroke();
     }
 
-    // --- LỚP HẠT NỔ (GIỮ NGUYÊN) ---
+    // --- LỚP HẠT NỔ ---
     function Particle(x, y) {
         this.x = x;
         this.y = y;
@@ -229,6 +235,7 @@
         }
     }
 
+    // --- CÁC HÀM TẠO HÌNH ---
     function getHeartPoints(scale) {
         var points = [];
         for (var t = 0; t < Math.PI * 2; t += 0.1) {
@@ -239,50 +246,66 @@
         return points;
     }
 
-    // Hàm lấy điểm Ngôi Sao (Giữ nguyên)
+    // Hàm Ngôi Sao lấp lánh (Giữ nguyên từ bản đẹp)
     function getStarPoints(scale) {
         var points = [];
-        var r = 15 * scale;
-        for (var i = 0; i < 5; i++) {
-            points.push({
-                x: Math.cos((18 + i * 72) / 180 * Math.PI) * r * 2,
-                y: -Math.sin((18 + i * 72) / 180 * Math.PI) * r * 2
-            });
-            points.push({
-                x: Math.cos((54 + i * 72) / 180 * Math.PI) * r,
-                y: -Math.sin((54 + i * 72) / 180 * Math.PI) * r
-            });
+        var spikes = 5;
+        var outerRadius = 20 * scale; 
+        var innerRadius = 8 * scale;  
+        var step = Math.PI / spikes;
+
+        var verticesX = [];
+        var verticesY = [];
+        for (var i = 0; i < 2 * spikes; i++) {
+            var r = (i % 2 === 0) ? outerRadius : innerRadius;
+            var a = i * step - Math.PI / 2;
+            verticesX.push(Math.cos(a) * r);
+            verticesY.push(Math.sin(a) * r);
         }
-        var fullPoints = [];
-        for (var j = 0; j < points.length; j++) {
-            var p1 = points[j];
-            var p2 = points[(j + 1) % points.length];
-            for (var k = 0; k < 5; k++) {
-                fullPoints.push({
-                    x: p1.x + (p2.x - p1.x) * (k / 5),
-                    y: p1.y + (p2.y - p1.y) * (k / 5)
-                });
+
+        for (var i = 0; i < verticesX.length; i++) {
+            var next = (i + 1) % verticesX.length;
+            var dx = verticesX[next] - verticesX[i];
+            var dy = verticesY[next] - verticesY[i];
+            var particleDensity = 15; 
+            for (var k = 0; k < particleDensity; k++) {
+                var t = k / particleDensity;
+                points.push({x: verticesX[i] + dx * t, y: verticesY[i] + dy * t});
             }
         }
-        return fullPoints;
+        for(var j=0; j < 20; j++) {
+            points.push({x: random(-innerRadius, innerRadius) * 0.5, y: random(-innerRadius, innerRadius) * 0.5});
+        }
+        return points;
     }
 
-    // Hàm lấy điểm Mặt Trăng (Giữ nguyên)
+    // Hàm Mặt Trăng rõ nét (Giữ nguyên từ bản đẹp)
     function getMoonPoints(scale) {
         var points = [];
-        var r = 10 * scale; 
-        for (var t = 0; t < Math.PI * 2; t += 0.1) {
-            points.push({x: r * Math.cos(t), y: r * Math.sin(t)});
+        var R = 22 * scale;
+        var offset = 10 * scale;
+        
+        for (var x = -R; x <= R; x += scale * 0.8) {
+            for (var y = -R; y <= R; y += scale * 0.8) {
+                var d1 = Math.sqrt(x*x + y*y); 
+                var d2 = Math.sqrt((x - offset)*(x - offset) + y*y);
+                
+                if (d1 < R && d2 > R * 0.85) { 
+                    points.push({x: x, y: y});
+                }
+            }
         }
-        return points.filter(p => p.x > -5 * scale); 
+        return points;
     }
 
+    // Hàm Chữ đậm nét (Giữ nguyên từ bản đẹp)
     function getTextPoints(text, fontSize) {
         var hiddenCanvas = document.createElement('canvas');
         var hiddenCtx = hiddenCanvas.getContext('2d');
         hiddenCanvas.width = 1000;
-        hiddenCanvas.height = fontSize * 3;
-        hiddenCtx.font = 'bold ' + fontSize + 'px Arial, sans-serif';
+        hiddenCanvas.height = fontSize * 4;
+        
+        hiddenCtx.font = '900 ' + fontSize + 'px Arial, sans-serif'; 
         hiddenCtx.fillStyle = '#FFF';
         hiddenCtx.textAlign = 'center';
         hiddenCtx.textBaseline = 'middle';
@@ -291,7 +314,8 @@
         var imageData = hiddenCtx.getImageData(0, 0, hiddenCanvas.width, hiddenCanvas.height);
         var data = imageData.data;
         var points = [];
-        for (var i = 0; i < data.length; i += 4 * 3) {
+        
+        for (var i = 0; i < data.length; i += 4 * 2) { 
             if (data[i + 3] > 128) {
                 var px = (i / 4) % hiddenCanvas.width;
                 var py = Math.floor((i / 4) / hiddenCanvas.width);
@@ -332,7 +356,7 @@
                 var chance = random(0, 100);
                 var shape = null;
                 
-                // TỶ LỆ XUẤT HIỆN (GIỮ NGUYÊN)
+                // TỶ LỆ XUẤT HIỆN
                 if (chance > 92) { shape = 'text'; } 
                 else if (chance > 80) { shape = 'heart'; }
                 else if (chance > 65) { shape = 'star'; } 
@@ -363,11 +387,13 @@
         my = e.pageY - canvas.offsetTop;
     });
 
-    // --- KÍCH HOẠT HỘP QUÀ (KHÔNG PHÁT NHẠC NỮA) ---
     document.getElementById('gift-overlay').addEventListener('click', function() {
-        this.style.display = 'none'; // Ẩn hộp quà
-        
-        // Chỉ chạy vòng lặp pháo hoa, không chạy nhạc
+        this.style.display = 'none'; 
+        backgroundAudio.play().then(function() {
+            musicStarted = true;
+        }).catch(function(error) {
+            console.log("Cần tương tác để phát nhạc");
+        });
         isRunning = true;
         loop();
     });
